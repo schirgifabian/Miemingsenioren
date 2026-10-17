@@ -222,18 +222,18 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
 }
 </style>
 
-<script type="application/json" id="state">{"example":false,"updated":"2026-10-17T12:57:51.579Z","events":[{"id":"e1","date":"2026-10-21","title":"Beispiel: Heimspiel","place":"Golfclub Mieming","time":"09:00","top":"blau","pants":"schwarz","length":"kurz","note":""},{"id":"e2","date":"2026-10-28","title":"Beispiel: Auswärtsspiel","place":"","time":"08:30","top":"weiss","pants":"blau","length":"lang","note":"Bitte Regenjacke mitnehmen."}]}</script>
+<script type="application/json" id="state">{"example":false,"updated":"2026-10-17T13:02:49.141Z","events":[{"id":"e1","date":"2026-10-18","title":"Seniorenabschlussturnier ","place":"Golfclub Mieming","time":"09:40","top":"blau","pants":"blau","length":"lang","note":"Kanonenstart"}]}</script>
 <div id="app"></div>
 
 <script data-keep id="app-script">
 (function () {
   var TOP = {
-    blau:  { label: "Blau", fill: "#2B57B5", detail: "rgba(255,255,255,.45)" },
+    blau:  { label: "Dunkelblau", fill: "#1F3366", detail: "rgba(255,255,255,.4)" },
     weiss: { label: "Weiß", fill: "#FFFFFF", detail: "rgba(0,0,0,.28)" }
   };
   var PANTS = {
     schwarz: { label: "Schwarz", fill: "#1B1D1F", detail: "rgba(255,255,255,.3)" },
-    blau:    { label: "Blau",    fill: "#1F3366", detail: "rgba(255,255,255,.35)" }
+    blau:    { label: "Dunkelblau", fill: "#1F3366", detail: "rgba(255,255,255,.35)" }
   };
   var LENGTH = { kurz: "Kurz", lang: "Lang", frei: "Kurz oder lang" };
   var DRAFT_KEY = "kleiderordnung-entwurf";
@@ -430,8 +430,8 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
         fieldHTML(ev, "title", "Anlass", "text", "z. B. Heimspiel") +
         fieldHTML(ev, "place", "Ort", "text", "z. B. Golfclub Mieming") +
         "</div>" +
-        segHTML(ev, "top", "Oberteil", [{ value: "blau", label: "Blau", fill: TOP.blau.fill }, { value: "weiss", label: "Weiß", fill: TOP.weiss.fill }]) +
-        segHTML(ev, "pants", "Hose", [{ value: "schwarz", label: "Schwarz", fill: PANTS.schwarz.fill }, { value: "blau", label: "Blau", fill: PANTS.blau.fill }]) +
+        segHTML(ev, "top", "Oberteil", [{ value: "blau", label: "Dunkelblau", fill: TOP.blau.fill }, { value: "weiss", label: "Weiß", fill: TOP.weiss.fill }]) +
+        segHTML(ev, "pants", "Hose", [{ value: "schwarz", label: "Schwarz", fill: PANTS.schwarz.fill }, { value: "blau", label: "Dunkelblau", fill: PANTS.blau.fill }]) +
         segHTML(ev, "length", "Länge der Hose", [{ value: "frei", label: "Kurz oder lang" }, { value: "kurz", label: "Kurz" }, { value: "lang", label: "Lang" }]) +
         fieldHTML(ev, "note", "Hinweis (optional)", "textarea", "z. B. Regenjacke mitnehmen") +
         "</div>";
@@ -508,7 +508,7 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
     }
   }
 
-  // Share image: 1080 x 1350 (4:5), the team in the day's outfit
+  // Share image: 1080 x 1350 (4:5), one player in the day's outfit
   var SKIN = "#E3B792", SHOE = "#F4F5F1", CAP = "#F4F5F1", INK = "#15231B";
   var C = { board: "#1C4733", ink: "#F3F7F1", muted: "#B5CBBD", tile: "#F6F8F4", panel: "#DCE5D8", flag: "#D2442A" };
 
@@ -532,6 +532,12 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
     function ellipse(x, yy, rx, ry, fill) {
       ctx.beginPath(); ctx.ellipse(x, yy, rx, ry, 0, 0, Math.PI * 2);
       ctx.fillStyle = fill; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = INK; ctx.stroke();
+    }
+    if (len === "frei") {
+      var ghost = new Path2D(LONG_D);
+      ctx.globalAlpha = .3; ctx.fillStyle = p.fill; ctx.fill(ghost); ctx.globalAlpha = 1;
+      ctx.setLineDash([6, 6]); ctx.lineWidth = 2.5; ctx.strokeStyle = INK; ctx.stroke(ghost); ctx.setLineDash([]);
+      len = "kurz";
     }
     var shoeY = len === "kurz" ? 288 : 297;
     if (len === "kurz") { limb(77, 205, 77, 284, 17); limb(123, 205, 123, 284, 17); }
@@ -625,8 +631,7 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
     // The team
     ctx.fillStyle = C.panel;
     roundRect(ctx, M, 300, W - 2 * M, 600, 28); ctx.fill();
-    var lens = ev.length === "frei" ? ["lang", "kurz", "lang"] : [ev.length, ev.length, ev.length];
-    [240, 540, 840].forEach(function (cx, i) { drawPerson(ctx, ev, lens[i], cx, 411, 1.5); });
+    drawPerson(ctx, ev, ev.length, W / 2, 398, 1.6);
 
     // Tiles
     var tiles = [
