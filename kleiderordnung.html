@@ -139,6 +139,11 @@ h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.3rem
 .actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; align-content: flex-start; }
 .copy-fallback { width: 100%; min-height: 9rem; border-radius: .5rem; padding: .6rem; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font-size: .95rem; }
 .status { font-size: .95rem; min-height: 1.4em; }
+.imgbox { display: grid; gap: .7rem; }
+.imgbox img { width: 100%; max-width: 26rem; border-radius: .6rem; display: block; box-shadow: 0 2px 12px rgba(0, 0, 0, .25); }
+.imgbox .hint { font-size: .95rem; }
+.board .imgbox .hint { color: var(--board-muted); }
+.row .imgbox .hint { color: var(--muted); }
 .board .status { color: var(--board-muted); }
 
 /* List of later dates */
@@ -217,7 +222,7 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
 }
 </style>
 
-<script type="application/json" id="state">{"example":true,"updated":"2026-10-17T10:00:00.000Z","events":[{"id":"e1","date":"2026-10-21","title":"Beispiel: Heimspiel","place":"Golfclub Mieming","time":"09:00","top":"blau","pants":"schwarz","length":"frei","note":""},{"id":"e2","date":"2026-10-28","title":"Beispiel: Auswärtsspiel","place":"","time":"08:30","top":"weiss","pants":"blau","length":"lang","note":"Bitte Regenjacke mitnehmen."}]}</script>
+<script type="application/json" id="state">{"example":false,"updated":"2026-10-17T12:57:51.579Z","events":[{"id":"e1","date":"2026-10-21","title":"Beispiel: Heimspiel","place":"Golfclub Mieming","time":"09:00","top":"blau","pants":"schwarz","length":"kurz","note":""},{"id":"e2","date":"2026-10-28","title":"Beispiel: Auswärtsspiel","place":"","time":"08:30","top":"weiss","pants":"blau","length":"lang","note":"Bitte Regenjacke mitnehmen."}]}</script>
 <div id="app"></div>
 
 <script data-keep id="app-script">
@@ -232,6 +237,11 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
   };
   var LENGTH = { kurz: "Kurz", lang: "Lang", frei: "Kurz oder lang" };
   var DRAFT_KEY = "kleiderordnung-entwurf";
+  var LONG_D = "M66 146 L134 146 L141 292 L107 292 L100 184 L93 292 L59 292 Z";
+  var SHORT_D = "M66 146 L134 146 L143 218 L106 222 L100 188 L94 222 L57 218 Z";
+  var SHIRT_D = "M72 24 L88 14 Q100 22 112 14 L128 24 L166 42 L154 80 L136 72 L137 134 Q100 140 63 134 L64 72 L46 80 L34 42 Z";
+  var COLLAR_D = "M88 14 L100 30 L91 39 Z M112 14 L100 30 L109 39 Z";
+  var images = {};
 
   var state = JSON.parse(document.getElementById("state").textContent);
   var app = document.getElementById("app");
@@ -281,8 +291,7 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
 
   function figure(ev) {
     var t = TOP[ev.top] || TOP.blau, p = PANTS[ev.pants] || PANTS.schwarz;
-    var longP = "M66 146 L134 146 L141 292 L107 292 L100 184 L93 292 L59 292 Z";
-    var shortP = "M66 146 L134 146 L143 218 L106 222 L100 188 L94 222 L57 218 Z";
+    var longP = LONG_D, shortP = SHORT_D;
     var pants;
     if (ev.length === "lang") pants = '<path d="' + longP + '" fill="' + p.fill + '" class="g-line"/>';
     else if (ev.length === "kurz") pants = '<path d="' + shortP + '" fill="' + p.fill + '" class="g-line"/>';
@@ -293,11 +302,11 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
       pants +
       '<path d="M66 157 L134 157" stroke="' + p.detail + '" stroke-width="2"/>' +
       '<path d="M100 157 L100 180" stroke="' + p.detail + '" stroke-width="2"/>' +
-      '<path d="M72 24 L88 14 Q100 22 112 14 L128 24 L166 42 L154 80 L136 72 L137 134 Q100 140 63 134 L64 72 L46 80 L34 42 Z" fill="' + t.fill + '" class="g-line"/>' +
+      '<path d="' + SHIRT_D + '" fill="' + t.fill + '" class="g-line"/>' +
       '<path d="M40 39.5 L52 77.3 M160 39.5 L148 77.3" stroke="' + t.detail + '" stroke-width="2" fill="none"/>' +
       '<path d="M100 30 L100 62" stroke="' + t.detail + '" stroke-width="2"/>' +
       '<circle cx="100" cy="41" r="2.4" fill="' + t.detail + '"/><circle cx="100" cy="52" r="2.4" fill="' + t.detail + '"/>' +
-      '<path d="M88 14 L100 30 L91 39 Z M112 14 L100 30 L109 39 Z" fill="' + t.fill + '" class="g-line"/>' +
+      '<path d="' + COLLAR_D + '" fill="' + t.fill + '" class="g-line"/>' +
       "</svg>";
   }
 
@@ -313,13 +322,16 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
 
   var ICON_WA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg>';
   var ICON_COPY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M9 9h10v11H9zM5 15V4h10"/></svg>';
+  var ICON_IMG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M3 5h18v14H3z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.6" fill="currentColor"/></svg>';
   var ICON_FLAG = '<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M3 1v18" stroke="currentColor" stroke-width="1.6"/><path d="M3.8 1.5 14 5 3.8 8.5Z" fill="var(--flag)"/></svg>';
 
   function shareButtons(ev, light) {
     return '<div class="actions">' +
       '<a class="btn ' + (light ? "btn-light" : "btn-primary") + '" href="https://wa.me/?text=' + encodeURIComponent(waText(ev)) + '" target="_blank" rel="noopener">' + ICON_WA + "In WhatsApp teilen</a>" +
+      '<button type="button" class="btn ' + (light ? "btn-outline-light" : "btn-ghost") + '" data-img="' + esc(ev.id) + '">' + ICON_IMG + "Bild für WhatsApp</button>" +
       '<button type="button" class="btn ' + (light ? "btn-outline-light" : "btn-ghost") + '" data-copy="' + esc(ev.id) + '">' + ICON_COPY + "Text kopieren</button>" +
       "</div>" +
+      '<div class="imgbox" id="imgbox-' + esc(ev.id) + '" hidden></div>' +
       '<textarea class="copy-fallback" id="fallback-' + esc(ev.id) + '" readonly hidden aria-label="Text zum Kopieren"></textarea>' +
       '<p class="status" id="status-' + esc(ev.id) + '" aria-live="polite"></p>';
   }
@@ -496,6 +508,225 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
     }
   }
 
+  // Share image: 1080 x 1350 (4:5), the team in the day's outfit
+  var SKIN = "#E3B792", SHOE = "#F4F5F1", CAP = "#F4F5F1", INK = "#15231B";
+  var C = { board: "#1C4733", ink: "#F3F7F1", muted: "#B5CBBD", tile: "#F6F8F4", panel: "#DCE5D8", flag: "#D2442A" };
+
+  function drawPerson(ctx, ev, len, cx, y, s) {
+    var t = TOP[ev.top] || TOP.blau, p = PANTS[ev.pants] || PANTS.schwarz;
+    ctx.save();
+    ctx.translate(cx - 100 * s, y);
+    ctx.scale(s, s);
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    function shape(d, fill) {
+      var path = new Path2D(d);
+      ctx.fillStyle = fill; ctx.fill(path);
+      ctx.lineWidth = 2.5; ctx.strokeStyle = INK; ctx.stroke(path);
+    }
+    function limb(x1, y1, x2, y2, w) {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+      ctx.lineWidth = w + 5; ctx.strokeStyle = INK; ctx.stroke();
+      ctx.lineWidth = w; ctx.strokeStyle = SKIN; ctx.stroke();
+    }
+    function line(d, color) { ctx.lineWidth = 2; ctx.strokeStyle = color; ctx.stroke(new Path2D(d)); }
+    function ellipse(x, yy, rx, ry, fill) {
+      ctx.beginPath(); ctx.ellipse(x, yy, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fillStyle = fill; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = INK; ctx.stroke();
+    }
+    var shoeY = len === "kurz" ? 288 : 297;
+    if (len === "kurz") { limb(77, 205, 77, 284, 17); limb(123, 205, 123, 284, 17); }
+    ellipse(72, shoeY, 18, 8, SHOE);
+    ellipse(128, shoeY, 18, 8, SHOE);
+    shape(len === "kurz" ? SHORT_D : LONG_D, p.fill);
+    shape("M67 130 L133 130 L134 148 L66 148 Z", p.fill);
+    line("M66 157 L134 157 M100 157 L100 180", p.detail);
+    limb(41, 64, 36, 124, 13);
+    limb(159, 64, 164, 124, 13);
+    ellipse(36, 130, 8, 8, SKIN);
+    ellipse(164, 130, 8, 8, SKIN);
+    limb(100, 2, 100, 18, 15);
+    ellipse(100, -16, 21, 23, SKIN);
+    shape("M78 -22 Q79 -46 100 -46 Q121 -46 122 -22 Z", CAP);
+    shape("M116 -24 L140 -20 Q142 -16 136 -16 L118 -18 Z", CAP);
+    shape(SHIRT_D, t.fill);
+    line("M40 39.5 L52 77.3 M160 39.5 L148 77.3 M100 30 L100 62", t.detail);
+    ctx.fillStyle = t.detail;
+    ctx.beginPath(); ctx.arc(100, 41, 2.4, 0, Math.PI * 2); ctx.arc(100, 52, 2.4, 0, Math.PI * 2); ctx.fill();
+    shape(COLLAR_D, t.fill);
+    ctx.restore();
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function fitFont(ctx, text, weight, family, size, minSize, maxW) {
+    while (size > minSize) {
+      ctx.font = weight + " " + size + "px " + family;
+      if (ctx.measureText(text).width <= maxW) break;
+      size -= 2;
+    }
+    ctx.font = weight + " " + size + "px " + family;
+    return size;
+  }
+  function wrapLines(ctx, text, maxW, maxLines) {
+    var words = text.split(/\s+/), lines = [], cur = "";
+    words.forEach(function (w) {
+      var test = cur ? cur + " " + w : w;
+      if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; } else cur = test;
+    });
+    if (cur) lines.push(cur);
+    if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] += " …"; }
+    return lines;
+  }
+
+  async function renderCard(ev) {
+    var DISPLAY = '"Barlow Condensed", "Arial Narrow", sans-serif';
+    var BODY = '"Atkinson Hyperlegible", "Segoe UI", sans-serif';
+    try {
+      await Promise.all([
+        document.fonts.load('700 96px "Barlow Condensed"'),
+        document.fonts.load('600 32px "Barlow Condensed"'),
+        document.fonts.load('400 36px "Atkinson Hyperlegible"')
+      ]);
+    } catch (e) {}
+    var W = 1080, H = 1350, M = 60;
+    var cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    var ctx = cv.getContext("2d");
+    var t = TOP[ev.top] || TOP.blau, p = PANTS[ev.pants] || PANTS.schwarz;
+
+    ctx.fillStyle = C.board; ctx.fillRect(0, 0, W, H);
+    ctx.textBaseline = "alphabetic";
+
+    ctx.fillStyle = C.muted;
+    ctx.font = "600 32px " + DISPLAY;
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "4px";
+    ctx.fillText("SENIORENMANNSCHAFT · GOLFCLUB MIEMING", M, 100);
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+
+    ctx.fillStyle = C.ink;
+    var dateText = fmtDate(ev.date).toUpperCase();
+    fitFont(ctx, dateText, 700, DISPLAY, 100, 56, W - 2 * M);
+    ctx.fillText(dateText, M, 200);
+
+    var meta = metaLine(ev);
+    if (meta) {
+      ctx.fillStyle = C.muted;
+      fitFont(ctx, meta, 400, BODY, 36, 26, W - 2 * M);
+      ctx.fillText(meta, M, 256);
+    }
+
+    // The team
+    ctx.fillStyle = C.panel;
+    roundRect(ctx, M, 300, W - 2 * M, 600, 28); ctx.fill();
+    var lens = ev.length === "frei" ? ["lang", "kurz", "lang"] : [ev.length, ev.length, ev.length];
+    [240, 540, 840].forEach(function (cx, i) { drawPerson(ctx, ev, lens[i], cx, 411, 1.5); });
+
+    // Tiles
+    var tiles = [
+      { label: "OBERTEIL", value: t.label.toUpperCase(), sw: t.fill },
+      { label: "HOSE", value: p.label.toUpperCase(), sw: p.fill },
+      { label: "LÄNGE", value: LENGTH[ev.length].toUpperCase() }
+    ];
+    var tw = (W - 2 * M - 2 * 30) / 3;
+    tiles.forEach(function (tile, i) {
+      var x = M + i * (tw + 30);
+      ctx.fillStyle = C.muted;
+      ctx.font = "600 30px " + DISPLAY;
+      if ("letterSpacing" in ctx) ctx.letterSpacing = "4px";
+      ctx.fillText(tile.label, x, 960);
+      if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+      ctx.fillStyle = C.tile;
+      roundRect(ctx, x, 980, tw, 120, 16); ctx.fill();
+      var tx = x + 26;
+      if (tile.sw) {
+        ctx.beginPath(); ctx.arc(x + 50, 1040, 24, 0, Math.PI * 2);
+        ctx.fillStyle = tile.sw; ctx.fill();
+        ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.stroke();
+        tx = x + 92;
+      }
+      ctx.fillStyle = INK;
+      fitFont(ctx, tile.value, 700, DISPLAY, 64, 34, x + tw - 20 - tx);
+      ctx.fillText(tile.value, tx, 1062);
+    });
+
+    var y = 1180;
+    if (ev.note) {
+      ctx.fillStyle = C.ink;
+      ctx.font = "400 38px " + BODY;
+      wrapLines(ctx, ev.note, W - 2 * M, 2).forEach(function (l) { ctx.fillText(l, M, y); y += 50; });
+    }
+
+    // Footer flag
+    ctx.strokeStyle = C.muted; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(M + 4, 1262); ctx.lineTo(M + 4, 1302); ctx.stroke();
+    ctx.fillStyle = C.flag;
+    ctx.beginPath(); ctx.moveTo(M + 6, 1263); ctx.lineTo(M + 32, 1272); ctx.lineTo(M + 6, 1281); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = C.muted;
+    ctx.font = "400 28px " + BODY;
+    ctx.fillText("Kleiderordnung der Seniorenmannschaft", M + 48, 1298);
+
+    return new Promise(function (resolve, reject) {
+      cv.toBlob(function (b) { b ? resolve(b) : reject(new Error("toBlob")); }, "image/png");
+    });
+  }
+
+  function findEvent(id) { return (state.events || []).filter(function (e) { return e.id === id; })[0]; }
+
+  async function makeImage(id) {
+    var ev = findEvent(id);
+    var box = document.getElementById("imgbox-" + id);
+    if (!ev || !box) return;
+    setStatus("status-" + id, "Bild wird erstellt …");
+    try {
+      var blob = await renderCard(ev);
+      images[id] = blob;
+      var canCopy = typeof ClipboardItem !== "undefined" && navigator.clipboard && navigator.clipboard.write;
+      var light = !!box.closest(".board");
+      box.innerHTML = '<img src="' + URL.createObjectURL(blob) + '" alt="' + esc("Bild für WhatsApp: " + fmtDate(ev.date) + ", Oberteil " + (TOP[ev.top] || TOP.blau).label + ", Hose " + (PANTS[ev.pants] || PANTS.schwarz).label + ", " + LENGTH[ev.length]) + '">' +
+        '<div class="actions"><button type="button" class="btn ' + (light ? "btn-light" : "btn-primary") + '" data-save-img="' + esc(id) + '">Bild speichern</button>' +
+        (canCopy ? '<button type="button" class="btn ' + (light ? "btn-outline-light" : "btn-ghost") + '" data-copy-img="' + esc(id) + '">Bild kopieren</button>' : "") + "</div>" +
+        '<p class="hint">Bild speichern und in WhatsApp über die Büroklammer anhängen. Am Handy geht es auch so: Bild lange antippen und sichern.</p>';
+      box.hidden = false;
+      setStatus("status-" + id, "");
+    } catch (e) {
+      setStatus("status-" + id, "Das Bild konnte nicht erstellt werden.");
+    }
+  }
+
+  async function saveImage(id) {
+    var ev = findEvent(id), blob = images[id];
+    if (!ev || !blob) return;
+    var downloads = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+    if (!downloads) { setStatus("status-" + id, "Speichern geht hier nicht. Bitte das Bild lange antippen und sichern."); return; }
+    try {
+      await downloads.save({ filename: "Kleidung-" + (ev.date || "Spieltag") + ".png", data: blob });
+      setStatus("status-" + id, "Bild gespeichert. Jetzt in der WhatsApp-Gruppe anhängen.");
+    } catch (err) {
+      var code = err && err.code;
+      if (code === "declined") setStatus("status-" + id, "");
+      else if (code === "rate_limited") setStatus("status-" + id, "Bitte kurz warten und noch einmal tippen.");
+      else setStatus("status-" + id, "Speichern geht hier nicht. Bitte das Bild lange antippen und sichern.");
+    }
+  }
+
+  async function copyImage(id) {
+    var blob = images[id];
+    if (!blob) return;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      setStatus("status-" + id, "Bild kopiert. Jetzt in WhatsApp einfügen.");
+    } catch (e) {
+      setStatus("status-" + id, "Kopieren geht hier nicht. Bitte „Bild speichern“ nehmen.");
+    }
+  }
+
   async function copyText(id) {
     var ev = (state.events || []).filter(function (e) { return e.id === id; })[0];
     if (!ev) return;
@@ -514,6 +745,9 @@ footer { color: var(--muted); font-size: .9rem; display: grid; gap: .35rem; }
     var b = e.target.closest("button");
     if (!b) return;
     if (b.hasAttribute("data-copy")) copyText(b.getAttribute("data-copy"));
+    else if (b.hasAttribute("data-img")) makeImage(b.getAttribute("data-img"));
+    else if (b.hasAttribute("data-save-img")) saveImage(b.getAttribute("data-save-img"));
+    else if (b.hasAttribute("data-copy-img")) copyImage(b.getAttribute("data-copy-img"));
     else if (b.hasAttribute("data-edit")) { editorMsg = ""; startEditing(); }
     else if (b.hasAttribute("data-cancel")) { editing = false; draft = null; try { sessionStorage.removeItem(DRAFT_KEY); } catch (err) {} render(); }
     else if (b.hasAttribute("data-add")) { draft.events.push(newEvent()); render(); }
